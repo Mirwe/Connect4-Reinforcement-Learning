@@ -1,16 +1,32 @@
-# This is a sample Python script.
+from Forza4 import Forza4
+import os
 
-# Press Maiusc+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# Clearing the Screen
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+game = Forza4()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+finished = False
+player = 1
+
+while not finished:
+    print(game)
+    print("Player " + str(player))
+
+    col = input("Enter column [0-6]: ")
+    ok = game.insert_coin(player=player, col=int(col))
+
+    if not ok:
+        finished = True
+
+    if game.check_win():
+        break
+
+
+    if player == 2:
+        player = 1
+    else:
+        player = 2
+
+    os.system('cls')
+
