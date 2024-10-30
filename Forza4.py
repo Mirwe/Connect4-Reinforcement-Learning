@@ -24,6 +24,9 @@ class Forza4:
         return o
 
     def insert_coin(self, player, col):
+        if col >= self.num_cols:
+            return False
+
         for i in reversed(range(self.num_rows)):
             if self.board[i][col] == 0:
                 self.board[i][col] = player
@@ -31,13 +34,27 @@ class Forza4:
 
         return False
 
-    def check_win(self):
+    def check_victory(self, player):
 
-        for row in self.board:
-            for i in range(0, self.num_cols):
-                if i+4 > self.num_cols:
-                    break
+        for r in range(self.num_rows):
+            for c in range(self.num_cols):
+                if self.board[r][c] == player:
+                    # Controllo verso destra
+                    if c + 3 < self.num_cols and all(self.board[r][c + i] == player for i in range(4)):
+                        return True
+                    # Controllo verso il basso
+                    if r + 3 < self.num_rows and all(self.board[r + i][c] == player for i in range(4)):
+                        return True
+                    # Controllo diagonale verso destra in basso
+                    if r + 3 < self.num_rows and c + 3 < self.num_cols \
+                            and all(self.board[r + i][c + i] == player for i in range(4)):
+                        return True
+                    # Controllo diagonale verso sinistra in basso
+                    if r + 3 < self.num_rows and c - 3 >= 0 \
+                            and all(self.board[r + i][c - i] == player for i in range(4)):
+                        return True
+        return False
 
-                if row[i] != 0 and row[i] == row[i+1] == row[i+2] == row[i+3]:
-                    print("YOU WIN")
-                    return True
+    # Return true if tie
+    def check_tie(self):
+        return 0 not in self.board[0]

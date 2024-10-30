@@ -5,28 +5,40 @@ import os
 
 
 game = Forza4()
+print(game)
 
-finished = False
 player = 1
 
-while not finished:
-    print(game)
+while True:
+
     print("Player " + str(player))
 
     col = input("Enter column [0-6]: ")
-    ok = game.insert_coin(player=player, col=int(col))
+    correctly_inserted = game.insert_coin(player=player, col=int(col))
 
-    if not ok:
+    while not correctly_inserted:
+        print("Not possible to insert coin there, retry ")
+        col = input("Enter column [0-6]: ")
+        correctly_inserted = game.insert_coin(player=player, col=int(col))
+
+    win = game.check_victory(player)
+
+    os.system('cls')
+    print(game)
+
+    if win:
         finished = True
-
-    if game.check_win():
+        print("Player "+str(player)+" WIN")
         break
 
+    if game.check_tie():
+        finished = True
+        print("IT'S TIE!")
+        break
 
     if player == 2:
         player = 1
     else:
         player = 2
 
-    os.system('cls')
 
