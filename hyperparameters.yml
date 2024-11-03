@@ -1,9 +1,9 @@
-num_episodes: 50000
+num_episodes: 100000
 replay_memory_size: 100000
 mini_batch_size: 64
 epsilon_init: 1
 epsilon_decay: 0.99995
 epsilon_min: 0.01
-network_sync_rate: 5
-learning_rate_a: 0.005
+network_sync_rate: 200
+learning_rate_a: 0.001
 discount_factor_g: 0.99

@@ -1,10 +1,12 @@
 import random
 import torch
+import Opponents
 import tkinter as tk
 from tkinter import messagebox
 from DQN import DQN
 from Forza4 import Forza4
 from GPTopponent import GPTopponent
+from MiniMaxOpponent import MinimaxOpponent
 
 # Constants
 ROWS = 6
@@ -14,10 +16,9 @@ PLAYER_COLORS = ["#FF3333", "#FFD700"]  # Colors for Player 1 (Red) and Player 2
 BACKGROUND_COLOR = "#1E90FF"  # Blue background for Connect4 board
 
 # Load DQN Agent if used
-players = ["Agent", "Human"]  # Configure players as needed (e.g., "GPT", "Random")
-if "Agent" in players:
-    dqn = DQN().to("cpu")
-    dqn.load_state_dict(torch.load("runs/model1_to_beat.pt"))
+# Configure players as needed (e.g., "GPT", "Random", "Minimax", "Agent", "Human")
+players = ["Minimax", "Human"]
+
 
 # Initialize the game
 game = Forza4()
@@ -106,26 +107,30 @@ class Connect4GUI:
                 self.gpt_move()
             elif players[self.current_player - 1] == "Random":
                 self.random_move()
+            elif players[self.current_player - 1] == "Minimax":
+                self.minimax_move()
 
         # Wait a moment and call itself again to keep updating AI turns
         self.root.after(500, self.update_turn)
 
     def agent_move(self):
         """Agent selects the column and inserts a coin"""
-        t = torch.Tensor(self.game.board)
-        flatten_state = torch.flatten(t)
-        col = int(dqn(flatten_state).argmax())
+        col = Opponents.agent_move(self.game.board)
         self.insert_coin(self.current_player, col)
 
     def gpt_move(self):
         """GPT opponent selects the column and inserts a coin"""
-        gpt = GPTopponent(self.game.board.copy(), self.current_player)
-        col = gpt.ai_move()
+        col = Opponents.gpt_move(self.game.board, self.current_player)
         self.insert_coin(self.current_player, col)
 
     def random_move(self):
         """Random opponent selects a random column and inserts a coin"""
-        col = random.randint(0, COLS - 1)
+        col = Opponents.random_move()
+        self.insert_coin(self.current_player, col)
+
+    def minimax_move(self):
+        """Random opponent selects a random column and inserts a coin"""
+        col = Opponents.minimax_move(self.game, self.current_player)
         self.insert_coin(self.current_player, col)
 
     def switch_player(self):

@@ -5,7 +5,7 @@ import os
 import random
 
 import numpy as np
-import torch.optim as optim
+
 import torch
 import matplotlib
 import matplotlib.pyplot as plt
@@ -28,7 +28,6 @@ os.makedirs(RUNS_DIR, exist_ok=True)
 matplotlib.use('Agg')
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = "cpu"
 
 
 class Agent:
@@ -59,29 +58,25 @@ class Agent:
         self.MODEL_FILE2 = os.path.join(RUNS_DIR, f'model_model2.pt')
         self.GRAPH_FILE2 = os.path.join(RUNS_DIR, f'graph_model2.png')
 
+        self.loss_per_episode = []
+
     def train(self):
-        num_states = 42
-        num_action = 7
 
         start_time = datetime.now()
         last_graph_update_time = start_time
 
         rewards_per_episode_player1 = []
-        # rewards_per_episode_player2 = []
 
+        # policy_dqn = DQN().to(device)
         policy_dqn = DQN().to(device)
         # Load learned policy
-        policy_dqn.load_state_dict(torch.load("runs/model1_to_beat.pt"))
+        policy_dqn.load_state_dict(torch.load("runs/model1_02-11-24_23-30.pt"))
 
-        memory_1 = ReplayMemory(10000)
-        # memory_2 = ReplayMemory(10000)
+        memory_1 = ReplayMemory(100000)
         epsilon_1 = self.epsilon_init
-        # epsilon_2 = self.epsilon_init
+
         target_dqn = DQN().to(device)
         target_dqn.load_state_dict(policy_dqn.state_dict())
-
-        # target2_dqn = DQN(num_states, num_action).to(device)
-        # target2_dqn.load_state_dict(policy_dqn.state_dict())
 
         self.optimizer = torch.optim.Adam(policy_dqn.parameters(), lr=self.learning_rate_a)
 
@@ -106,7 +101,7 @@ class Agent:
                 else:
                     action_player1 = int(policy_dqn(state_1).argmax())
 
-                new_board, new_state, reward1, terminated, player_win = game.make_move(1, action_player1, "Agent")
+                new_board, new_state, reward1, terminated, player_win = game.make_move(1, action_player1, "GPT")
 
                 if player_win == 1:
                     agent_wins += 1
@@ -120,6 +115,8 @@ class Agent:
                 reward1 = torch.tensor(reward1, dtype=torch.float, device=device)
                 memory_1.append((state_1, action_player1, new_state, reward1, terminated))
 
+                step_count += 1
+
                 if terminated:
                     break
 
@@ -128,7 +125,7 @@ class Agent:
             rewards_per_episode_player1.append(reward1)
 
             if episode_reward_player_1 > best_reward_1:
-                log_message = f"{datetime.now().strftime(DATE_FORMAT)}: New best reward 1{episode_reward_player_1:0.1f}) at episode {episode}, saving model..."
+                log_message = f"{datetime.now().strftime(DATE_FORMAT)}: New best reward {episode_reward_player_1}) at episode {episode}, saving model..."
                 print(log_message)
                 with open(self.LOG_FILE, 'a') as file:
                     file.write(log_message + '\n')
@@ -217,6 +214,8 @@ class Agent:
         # Compute loss
         loss = self.loss_fn(current_q, target_q)
 
+        self.loss_per_episode.append(loss)
+
         # Optimize the model (backpropagation)
         self.optimizer.zero_grad()  # Clear gradients
         loss.backward()  # Compute gradients
@@ -230,13 +229,25 @@ class Agent:
         mean_rewards = np.zeros(len(rewards_per_episode))
         for x in range(len(mean_rewards)):
             mean_rewards[x] = np.mean(rewards_per_episode[max(0, x - 99):(x + 1)])
-        plt.subplot(121)  # plot on a 1 row x 2 col grid, at cell 1
+        plt.subplot(131)  # plot on a 1 row x 3 col grid, at cell 1
         # plt.xlabel('Episodes')
         plt.ylabel('Mean Rewards')
         plt.plot(mean_rewards)
 
+        # Plot average loss (Y-axis) vs episodes (X-axis)
+        mean_loss = np.zeros(len(self.loss_per_episode))
+        for x in range(len(mean_loss)):
+            # Detach tensors, convert to numpy, and calculate mean
+            losses = [loss.detach().numpy() for loss in self.loss_per_episode[max(0, x - 10):(x + 1)]]
+            mean_loss[x] = np.mean(losses)
+
+        plt.subplot(132)  # plot on a 1 row x 2 col grid, at cell 1
+        # plt.xlabel('Episodes')
+        plt.ylabel('Loss')
+        plt.plot(mean_loss)
+
         # Plot epsilon decay (Y-axis) vs episodes (X-axis)
-        plt.subplot(122)  # plot on a 1 row x 2 col grid, at cell 2
+        plt.subplot(133)  # plot on a 1 row x 2 col grid, at cell 2
         # plt.xlabel('Time Steps')
         plt.ylabel('Epsilon Decay')
         plt.plot(epsilon_history)
