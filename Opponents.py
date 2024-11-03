@@ -13,7 +13,7 @@ dqn.load_state_dict(torch.load("runs/model1_02-11-24_23-30.pt"))
 
 
 def agent_move(board):
-    """Agent selects the column and inserts a coin"""
+    """Agent selects the column"""
     t = torch.Tensor(board)
     flatten_state = torch.flatten(t)
     col = int(dqn(flatten_state).argmax())
@@ -21,14 +21,14 @@ def agent_move(board):
 
 
 def gpt_move(board, player_id):
-    """GPT opponent selects the column and inserts a coin"""
+    """GPT opponent selects the column"""
     gpt = GPTopponent(board.copy(), player_id)
     col = gpt.ai_move()
     return col
 
 
 def random_move():
-    """Random opponent selects a random column and inserts a coin"""
+    """Random opponent selects a random column"""
     col = random.randint(0, COLS - 1)
     return col
 

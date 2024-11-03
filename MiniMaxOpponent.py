@@ -10,6 +10,27 @@ class MinimaxOpponent:
         self.max_depth = max_depth
 
     def minimax(self, depth, maximizing_player):
+        """
+        Perform the minimax algorithm to evaluate the best possible move.
+
+        This function recursively explores the game tree to a specified depth,
+        evaluating the board state from the perspective of the AI player and
+        the opponent. It aims to maximize the AI's score while minimizing the
+        opponent's score.
+
+        Parameters:
+        depth (int): The current depth in the game tree. The algorithm will
+                     stop exploring further when depth reaches 0.
+        maximizing_player (bool): A boolean indicating whether the current
+                                  turn is for the maximizing player (AI) or
+                                  the minimizing player (opponent).
+
+        Returns:
+        int: The evaluation score of the board state. A positive score
+             indicates a favorable state for the AI, a negative score
+             indicates a favorable state for the opponent, and zero
+             indicates a neutral or draw state.
+        """
         # Check terminal states for wins, losses, or draw
         if self.game.check_victory(self.minimax_player_id):  # AI's win
             return 1

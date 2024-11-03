@@ -31,6 +31,20 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class Agent:
+    """
+    Trains the agent using Deep Q-Learning.
+
+    This function initializes the game environment and the neural networks for the policy and target models.
+    It iteratively plays episodes of the game, updating the policy network based on the experiences collected
+    and periodically synchronizing the target network with the policy network. It also manages the exploration
+    strategy using epsilon-greedy policy and saves the best performing model.
+
+    Parameters:
+    None
+
+    Returns:
+    None
+    """
 
     def __init__(self):
         with open('hyperparameters.yml') as file:
@@ -174,41 +188,44 @@ class Agent:
                     step_count = 0
 
     def optimize(self, mini_batch, policy_dqn, target_dqn):
+        """
+        Perform a single optimization step on the policy network using a mini-batch of experiences.
 
-        # for state, action, new_state, reward, terminated in mini_batch:
-        #     if terminated:
-        #         target = reward
-        #
-        #     else:
-        #         with torch.no_grad():
-        #             target_q = reward + self.discount_factor_g * target_dqn(new_state).max()
+        This function calculates the loss between the current Q-values predicted by the policy network
+        and the target Q-values derived from the target network. It then performs backpropagation to
+        update the policy network's parameters.
+
+        Parameters:
+        mini_batch (list): A list of experiences, where each experience is a tuple containing:
+            - state (torch.Tensor): The state observed at the beginning of the experience.
+            - action (torch.Tensor): The action taken from the state.
+            - new_state (torch.Tensor): The state resulting from the action.
+            - reward (torch.Tensor): The reward received after taking the action.
+            - terminated (bool): A flag indicating whether the episode ended after the action.
+        policy_dqn (DQN): The policy network that is being optimized.
+        target_dqn (DQN): The target network used to calculate the target Q-values.
+
+        Returns:
+        None
+        """
 
         # Transpose the list of experiences and separate each element
         states, actions, new_states, rewards, terminations = zip(*mini_batch)
 
         # Stack tensors to create batch tensors
-        # tensor([[1,2,3]])
         states = torch.stack(states)
-
         actions = torch.stack(actions)
-
         new_states = torch.stack(new_states)
-
         rewards = torch.stack(rewards)
         terminations = torch.tensor(terminations).float().to(device)
 
         with torch.no_grad():
-            # if self.enable_double_dqn:
             best_actions_from_policy = policy_dqn(new_states).argmax(dim=1)
-
             target_q = rewards + (1 - terminations) * self.discount_factor_g * \
                        target_dqn(new_states).gather(dim=1,
                                                      index=best_actions_from_policy.unsqueeze(dim=1)).squeeze()
-            # else:
-            # Calculate target Q values (expected returns)
-            # target_q = rewards + (1 - terminations) * self.discount_factor_g * target_dqn(new_states).max(dim=1)[0]
 
-        # Calcuate Q values from current policy
+        # Calculate Q values from current policy
         current_q = policy_dqn(states).gather(dim=1, index=actions.unsqueeze(dim=1)).squeeze()
 
         # Compute loss

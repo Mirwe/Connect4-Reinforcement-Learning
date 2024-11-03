@@ -4,8 +4,26 @@ import torch.nn as nn
 
 
 class DQN(nn.Module):
-    # state_dim: dimensione dello stato --> 6*7=42x1
-    # action_dim: numero possibile di azioni = 7
+    """
+    Deep Q Network (DQN) model for playing the game.
+
+    The model consists of convolutional layers (Conv2d) and fully connected layers (Linear)
+    to process the input state and output Q-values for each action.
+
+    Attributes:
+    - conv1: First convolutional layer with 64 output channels.
+    - conv2: Second convolutional layer with 128 output channels.
+    - conv3: Third convolutional layer with 256 output channels.
+    - fc1: First fully connected layer with 256 neurons.
+    - fc2: Second fully connected layer with 128 neurons.
+    - fc3: Third fully connected layer with 128 neurons.
+    - fc4: Fourth fully connected layer with 7 neurons (one for each column).
+
+    Methods:
+    - forward(x): Processes the input state through the convolutional and fully connected layers
+                  to produce Q-values for each action.
+    """
+
     def __init__(self):
         super(DQN, self).__init__()
 

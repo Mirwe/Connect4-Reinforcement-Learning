@@ -17,8 +17,9 @@ BACKGROUND_COLOR = "#1E90FF"  # Blue background for Connect4 board
 
 # Load DQN Agent if used
 # Configure players as needed (e.g., "GPT", "Random", "Minimax", "Agent", "Human")
-players = ["Minimax", "Human"]
 
+# Agent trained as player 1
+players = ["Agent", "Human"]
 
 # Initialize the game
 game = Forza4()
@@ -138,7 +139,6 @@ class Connect4GUI:
         self.current_player = 1 if self.current_player == 2 else 2
         self.status_label.config(
             text=f"{players[self.current_player - 1]} Turn ({'Red' if self.current_player == 1 else 'Yellow'})")
-
 
 
 # Main GUI loop
